@@ -43,9 +43,11 @@
 # To get the latest version of this script, please download from:
 #   https://github.com/jemc/android_build_helper
 #
-# You are free to modify this script, but if you add improvements,
-# please consider submitting a pull request to the aforementioned upstream
-# repository for the benefit of other users.
+# You are free to modify and redistribute this script, but if you add
+# improvements, please consider submitting a pull request or patch to the
+# aforementioned upstream repository for the benefit of other users.
+#
+# This script is provided with no express or implied warranties.
 #
 
 ########################################################################
@@ -157,9 +159,9 @@ function android_build_set_env {
 
     # Since NDK r22 the "platforms" dir got removed
     if [ -d "${ANDROID_NDK_ROOT}/platforms" ]; then
-       export ANDROID_BUILD_SYSROOT="${ANDROID_NDK_ROOT}/platforms/android-${MIN_SDK_VERSION}/arch-${TOOLCHAIN_ARCH}"
+        export ANDROID_BUILD_SYSROOT="${ANDROID_NDK_ROOT}/platforms/android-${MIN_SDK_VERSION}/arch-${TOOLCHAIN_ARCH}"
     else
-       export ANDROID_BUILD_SYSROOT="${ANDROID_BUILD_TOOLCHAIN}/sysroot"
+        export ANDROID_BUILD_SYSROOT="${ANDROID_BUILD_TOOLCHAIN}/sysroot"
     fi
     export ANDROID_BUILD_PREFIX="${ANDROID_BUILD_DIR}/prefix/${TOOLCHAIN_ARCH}"
 
@@ -167,10 +169,10 @@ function android_build_set_env {
     export ANDROID_STL="libc++_shared.so"
     if [ -x "${ANDROID_NDK_ROOT}/sources/cxx-stl/llvm-libc++/libs/${TOOLCHAIN_ABI}/${ANDROID_STL}" ] ; then
         export ANDROID_STL_ROOT="${ANDROID_NDK_ROOT}/sources/cxx-stl/llvm-libc++/libs/${TOOLCHAIN_ABI}"
-    else 
+    else
         export ANDROID_STL_ROOT="${ANDROID_BUILD_SYSROOT}/usr/lib/${TOOLCHAIN_HOST}"
 
-        # NDK 25 requires -L<path-to-libc.so> ... 
+        # NDK 25 requires -L<path-to-libc.so> ...
         # I don't understand why, but without it, ./configure fails to build a valid 'conftest'.
         export ANDROID_LIBC_ROOT="${ANDROID_BUILD_SYSROOT}/usr/lib/${TOOLCHAIN_HOST}/${MIN_SDK_VERSION}"
     fi
@@ -448,16 +450,16 @@ function android_show_configure_opts {
 function android_clone_library {
     local tag="$1" ; shift
     local clone_root="$1" ; shift
-    local clone_url="$1" ; shift 
+    local clone_url="$1" ; shift
     local clone_branch="$1" ; shift
 
     mkdir -p "$(dirname "${clone_root}")"
     if [ -n "${clone_branch}" ] ; then
-	android_build_trace "Cloning '${clone_url}' (branch '${clone_branch}') under '${clone_root}'."
-	git clone --quiet --depth 1 -b "${clone_branch}" "${clone_url}" "${clone_root}"
+        android_build_trace "Cloning '${clone_url}' (branch '${clone_branch}') under '${clone_root}'."
+        git clone --quiet --depth 1 -b "${clone_branch}" "${clone_url}" "${clone_root}"
     else
-	android_build_trace "Cloning '${clone_url}' (default branch) under '${clone_root}'."
-	git clone --quiet --depth 1 "${clone_url}" "${clone_root}"
+        android_build_trace "Cloning '${clone_url}' (default branch) under '${clone_root}'."
+        git clone --quiet --depth 1 "${clone_url}" "${clone_root}"
     fi
     ( cd "${clone_root}" && git log --oneline -n 1)  || exit 1
 }
@@ -471,7 +473,7 @@ function android_build_library {
     (
         cd "${clone_root}" \
         && ( make clean || : ) && \
-        rm -f config.status 
+        rm -f config.status
     ) || exit 1
 
     (
@@ -522,7 +524,7 @@ fi
 # Compute NDK version into a numeric form:
 #   android-ndk-r21e -> 2105
 #   android-ndk-r25  -> 2500
-########################################################################    
+########################################################################
 export NDK_NUMBER="$(( $(echo "${NDK_VERSION}"|sed -e 's|android-ndk-r||g' -e 's|[a-z]||g') * 100 ))"
 NDK_VERSION_LETTER="$(echo "${NDK_VERSION}"|sed -e 's|android-ndk-r[0-9][0-9]||g'|tr '[:lower:]' '[:upper:]')"
 if [ -n "${NDK_VERSION_LETTER}" ] ; then

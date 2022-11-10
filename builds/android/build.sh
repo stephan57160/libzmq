@@ -39,7 +39,7 @@ export CURVE="${CURVE:-}"
 ########################################################################
 function usage {
     echo "LIBZMQ - Usage:"
-    echo "  export XXX=yyy"
+    echo "  export XXX=xxx"
     echo "  ./build.sh [ arm | arm64 | x86 | x86_64 ]"
     echo ""
     echo "See this file (configuration & tuning options) for details"
