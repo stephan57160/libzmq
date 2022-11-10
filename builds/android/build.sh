@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-
+#
+#   Exit if any step fails
 set -e
 
 # Use directory of current script as the working directory
@@ -26,7 +27,9 @@ export MIN_SDK_VERSION=${MIN_SDK_VERSION:-21}
 export ANDROID_BUILD_DIR="${ANDROID_BUILD_DIR:-${PWD}}"
 
 # Clean before processing
-export ANDROID_BUILD_CLEAN="${ANDROID_BUILD_CLEAN:-}"
+export ANDROID_BUILD_CLEAN="${ANDROID_BUILD_CLEAN:-no}"
+
+export CI_CONFIG_QUIET="${CI_CONFIG_QUIET:-yes}"
 
 # Select CURVE implementation:
 # - ""               # Do not use any CURVE implementation.
@@ -37,6 +40,10 @@ export CURVE="${CURVE:-}"
 ########################################################################
 # Utilities
 ########################################################################
+# Get access to android_build functions and variables
+# Perform some sanity checks and calculate some variables.
+source ./android_build_helper.sh
+
 function usage {
     echo "LIBZMQ - Usage:"
     echo "  export XXX=xxx"
@@ -96,10 +103,6 @@ export ANDROID_BUILD_CXXSTL="gnustl_shared_49"
 # Additional flags for LIBTOOL, for LIBZMQ and other dependencies.
 export LIBTOOL_EXTRA_LDFLAGS='-avoid-version'
 
-# Get access to android_build functions and variables
-# Perform some sanity checks and calculate some variables.
-source ./android_build_helper.sh
-
 # Set up android build environment and set ANDROID_BUILD_OPTS array
 android_build_set_env "${BUILD_ARCH}"
 android_download_ndk
@@ -107,12 +110,12 @@ android_build_env
 android_build_opts
 
 # Check for environment variable to clear the prefix and do a clean build
-if [[ $ANDROID_BUILD_CLEAN ]]; then
+if [ "${ANDROID_BUILD_CLEAN}" = "yes" ]; then
     android_build_trace "Doing a clean build (removing previous build and dependencies)..."
-    rm -rf "${ANDROID_BUILD_PREFIX:-android-build-prefix-not-set}"/*
+    rm -rf "${ANDROID_BUILD_PREFIX}"/*
 
     # Called shells MUST not clean after ourselves !
-    export ANDROID_BUILD_CLEAN=""
+    export ANDROID_BUILD_CLEAN="no"
 fi
 
 VERIFY=("libzmq.so")
@@ -131,7 +134,7 @@ elif [ "${CURVE}" == "libsodium" ]; then
 
         (
             CONFIG_OPTS=()
-            CONFIG_OPTS+=("--quiet")
+            [ "${CI_CONFIG_QUIET}" = "yes" ] && CONFIG_OPTS+=("--quiet")
             CONFIG_OPTS+=("${ANDROID_BUILD_OPTS[@]}")
             CONFIG_OPTS+=("--disable-soname-versions")
 
@@ -151,7 +154,7 @@ fi
 
     (
         CONFIG_OPTS=()
-        CONFIG_OPTS+=("--quiet")
+        [ "${CI_CONFIG_QUIET}" = "yes" ] && CONFIG_OPTS+=("--quiet")
         CONFIG_OPTS+=("${ANDROID_BUILD_OPTS[@]}")
         CONFIG_OPTS+=("${CURVE}")
         CONFIG_OPTS+=("--without-docs")
